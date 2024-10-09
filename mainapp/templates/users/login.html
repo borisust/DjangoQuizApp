@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+{% load bootstrap5 %}
+
+{% block title %}
+    User registration
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>User Login</h1>
+        <p>Don't have an account? <a href="{% url 'registration' %}">Click here to register.</a></p>
+        <form class="form-horizontal" action="{% url 'authentication' %}" method="post">
+            {% csrf_token %}
+            {% bootstrap_form form layout="horizontal" %}
+            <button class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+{% endblock %}
