@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mainapp',
-    'bootstrap5'
+    'crispy_forms',
+    'crispy_bootstrap5'
 ]
 
 MIDDLEWARE = [
@@ -112,6 +113,10 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+# crispy forms
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 
 # Static files (CSS, JavaScript, Images)

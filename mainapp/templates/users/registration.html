@@ -1,5 +1,5 @@
 {% extends 'layout.html' %}
-{% load bootstrap5 %}
+{% load crispy_forms_tags %}
 
 {% block title %}
     User registration
@@ -9,9 +9,9 @@
     <div class="container">
         <h1>User Registration</h1>
         <p>Already have an account? <a href="{% url 'authentication' %}">Click here to login.</a></p>
-        <form class="form-horizontal" action="{% url 'registration' %}" method="post">
+        <form action="{% url 'registration' %}" method="post">
             {% csrf_token %}
-            {% bootstrap_form form layout="horizontal" %}
+            {{form|crispy}}
             <button class="btn btn-primary">Submit</button>
         </form>
     </div>

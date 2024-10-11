@@ -5,44 +5,24 @@ from django.db import models
 
 
 class Quiz(models.Model):
-    is_graded = models.BooleanField(default=True)
-    title = models.CharField(max_length=150)
+    title = models.CharField(max_length=150, default='Untitled Quiz')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
-class AbstractQuestion(models.Model):
+class Question(models.Model):
+    TYPES = (('RB', 'Radio Buttons'), ('CB', 'Checkbox'))
+    type = models.CharField(max_length=2, choices=TYPES)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     text = models.CharField(max_length=150)
     image = models.ImageField(upload_to='images/', default=None, blank=True, null=True)
     explanation = models.CharField(max_length=150, default=None, blank=True, null=True)
 
-    class Meta:
-        abstract = True
 
-
-class MultiChoiceQuestion(AbstractQuestion):
-    is_single_answer = models.BooleanField(default=True)
-
-
-class MultiChoiceAnswerOption(models.Model):
-    question = models.ForeignKey(MultiChoiceQuestion, on_delete=models.CASCADE)
+class AnswerOption(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.CharField(max_length=150)
     is_correct = models.BooleanField(default=False)
-
-
-class NumericQuestion(AbstractQuestion):
-    correct_answer = models.FloatField()
-    error_margin = models.FloatField()
-
-
-class TextQuestion(AbstractQuestion):
-    is_case_sensitive = models.BooleanField(default=True)
-    max_characters = models.IntegerField()
-
-
-class TextAnswerOption(models.Model):
-    question = models.ForeignKey(TextQuestion, on_delete=models.CASCADE)
-    text = models.CharField(max_length=150)
 
 
 class QuizResponse(models.Model):
@@ -51,19 +31,9 @@ class QuizResponse(models.Model):
     datetime = models.DateTimeField(auto_now_add=True)
 
 
-class MultiChoiceQuestionResponse(models.Model):
+class QuestionResponse(models.Model):
     response = models.ForeignKey(QuizResponse, on_delete=models.CASCADE)
-    question = models.ForeignKey(MultiChoiceQuestion, on_delete=models.CASCADE)
-    answer = models.ForeignKey(MultiChoiceAnswerOption, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
 
 
-class NumericQuestionResponse(models.Model):
-    response = models.ForeignKey(QuizResponse, on_delete=models.CASCADE)
-    question = models.ForeignKey(NumericQuestion, on_delete=models.CASCADE)
-    answer = models.FloatField()
-
-
-class TextQuestionResponse(models.Model):
-    response = models.ForeignKey(QuizResponse, on_delete=models.CASCADE)
-    question = models.ForeignKey(TextQuestion, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=150)

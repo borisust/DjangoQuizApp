@@ -1,0 +1,79 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+    Quiz creator
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'creator.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Quiz creator</h1>
+    <p class="text-muted">Note: the quiz is saved in your profile. You can leave and resume quiz creation at any point.</p>
+    <div class="border m-2 p-3">
+        <form action="{% url 'editQuiz' quizID=id %}" id="quiz_form" autocomplete="off">
+            {% csrf_token %}
+            {{quizForm|crispy}}
+            <button type="submit" class="d-inline btn btn-primary">Save</button>
+            <p id="quiz_alert" class="d-inline ms-3 alert"></p>
+        </form>
+    </div>
+    <div>
+        <h3 class="ps-2">Questions:</h3>
+        <div id="questions" class="d-flex flex-wrap">
+            {% if questions %}
+                {% for question in questions %}
+                    <div class="w-25 p-1 collapse show" id="question_{{ question.id }}">
+                        <div class="card h-100">
+                            {% if question.image %}
+                                <img src="{{ question.image.url }}" alt="question image" class="card-img-top" />
+                            {% else %}
+                                <img src="{% static 'placeholder.svg' %}" alt="question image" class="card-img-top" />
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ question.text }}</h5>
+                                <button class="btn btn-danger" type="button" onclick="deleteQuestion({{ question.id }})">Delete question</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p id="no_questions" class="ps-2">No questions were added yet.</p>
+            {% endif %}
+        </div>
+        <div class="border m-2 p-3">
+            <h4>New question</h4>
+            <form action="{% url 'addQuestion' quizID=id %}" id="question_form" autocomplete="off">
+                <div id="image_preview" ></div>
+                {% csrf_token %}
+                {{questionForm|crispy}}
+                <h5>Answer options:</h5>
+                <p class="text-muted">Note: if no answer option is set as correct, the question will not be graded.</p>
+                <input type="hidden" name="answer_count" value="1" />
+                <div id="answers">
+                    <div id="answer_1" class="row mb-3">
+                        <label class="col col-form-label" for="answer_1_text">Answer 1:</label>
+                        <div class="col-8 col-lg-9 col-xxl-10">
+                            <input id="answer_1_text" class="textinput form-control" name="answer_1_text" type="text" maxlength="150" required="">
+                        </div>
+                        <div class="col pt-1">
+                            <input id="answer_1_cb" class="checkboxinput form-check-input" type="checkbox" name="answer_1_is_correct">
+                            <label class="form-check-label" for="answer_1_cb">Correct</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center mt-2 pb-1">
+                    <div class="w-100 me-2"><button id="btn_add_answer" class="btn btn-success w-100" type="button" onclick="addAnswer()" >Add answer option</button></div>
+                    <div class="w-100 ms-2"><button id="btn_rm_answer" class="btn btn-danger w-100" type="button"  onclick="removeAnswer()" disabled >Remove answer option</button></div>
+                </div>
+                <button id="btn_add_question" type="submit" class="d-inline mt-2 btn btn-primary">Add question</button>
+                <span id="question_alert" class="ms-3 alert alert-danger" hidden="" ></span>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
