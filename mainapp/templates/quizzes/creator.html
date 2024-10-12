@@ -27,7 +27,7 @@
         <div id="questions" class="d-flex flex-wrap">
             {% if questions %}
                 {% for question in questions %}
-                    <div class="w-25 p-1 collapse show" id="question_{{ question.id }}">
+                    <div class="w-25 p-1 collapse show" style="min-width: 200px" id="question_{{ question.id }}">
                         <div class="card h-100">
                             {% if question.image %}
                                 <img src="{{ question.image.url }}" alt="question image" class="card-img-top" />
@@ -36,6 +36,7 @@
                             {% endif %}
                             <div class="card-body">
                                 <h5 class="card-title">{{ question.text }}</h5>
+                                <button class="btn btn-info" type="button" onclick="editQuestion({{ question.id }})">Edit question</button>
                                 <button class="btn btn-danger" type="button" onclick="deleteQuestion({{ question.id }})">Delete question</button>
                             </div>
                         </div>
@@ -45,7 +46,7 @@
                 <p id="no_questions" class="ps-2">No questions were added yet.</p>
             {% endif %}
         </div>
-        <div class="border m-2 p-3">
+        <div class="border m-2 p-3" id="question_editor">
             <h4>New question</h4>
             <form action="{% url 'addQuestion' quizID=id %}" id="question_form" autocomplete="off">
                 <div id="image_preview" ></div>

@@ -37,7 +37,7 @@ $('#quiz_form').submit( (event) => {
 // answers
 let answerCount = 1;
 const answerHtml = document.getElementById('answer_1').innerHTML;
-const questionHtml = document.getElementById('question_form').innerHTML;
+const questionEditor = document.getElementById('question_editor').innerHTML;
 
 function blockButtons(bool){
     if (answerCount>1){
@@ -77,8 +77,8 @@ function removeAnswer(){
     new bootstrap.Collapse(el);
 }
 
-$('#question_form').submit((e)=>{
-    e.preventDefault();
+function submitQuestion(event){
+    event.preventDefault();
     $('#question_alert')[0].hidden=true;
     $('.error').remove();
     $form = $('#question_form');
@@ -89,9 +89,16 @@ $('#question_form').submit((e)=>{
         data: formData,
         success: function (response) {
             if (response.success){
-                displayQuestion(response.id, response.text, response.image);
+                if (response.hasOwnProperty('edit')){
+                    updateQuestion(response.id, response.text, response.image);
+                }else{
+                    displayQuestion(response.id, response.text, response.image);
+                }
                 answerCount=1;
-                $form.html(questionHtml);
+                $('#question_editor').html(questionEditor);
+                $('#question_editor').removeClass("border-info");
+                $('#question_form').submit((e) => submitQuestion(e));
+                $('#id_image').change(() => previewImage());
             }else{
                 $.each(response.errors, function(name,error){
                     error = `<small class="text-danger error"> ${error} </small>`;
@@ -108,30 +115,52 @@ $('#question_form').submit((e)=>{
         processData: false
 
     });
-});
+};
 
-$('#id_image').change(() => {
+$('#question_form').submit((e) => submitQuestion(e));
+
+function previewImage() {
     const img_data = $('#id_image')[0].files[0];
     const url = URL.createObjectURL(img_data);
     $('#image_preview').html(`<img src="${url}" alt="Image preview" class="img-thumbnail w-25" />`);
-});
+};
+
+$('#id_image').change(() => previewImage());
 
 function displayQuestion(id, text, image){
     $('#no_questions').remove();
     let el = document.createElement("div");
     el.id = `question_${id}`;
     el.classList.add("w-25", "p-1", "collapse");
+    el.style.minWidth = "200px";
     el.innerHTML = `
         <div class="card h-100">
         <img src="${image}" alt="question image" class="card-img-top" />
         <div class="card-body">
         <h5 class="card-title">${text}</h5>
+        <button class="btn btn-info" type="button" onclick="editQuestion(${id})">Edit question</button>
         <button class="btn btn-danger" type="button" onclick="deleteQuestion(${id})">Delete question</button>
         </div>
         </div>
     `;
     document.getElementById('questions').appendChild(el);
     new bootstrap.Collapse(el);
+}
+
+function updateQuestion(id, text, image){
+    let el = document.getElementById(`question_${id}`);
+    el.innerHTML = `
+        <div class="card h-100">
+        <img src="${image}" alt="question image" class="card-img-top" />
+        <div class="card-body">
+        <h5 class="card-title">${text}</h5>
+        <button class="btn btn-info" type="button" onclick="editQuestion(${id})">Edit question</button>
+        <button class="btn btn-danger" type="button" onclick="deleteQuestion(${id})">Delete question</button>
+        </div>
+        </div>
+    `;
+    el.classList.add('bg-info');
+    setTimeout(()=>{el.classList.remove('bg-info');},2000)
 }
 
 function deleteQuestion(id){
@@ -159,4 +188,33 @@ function deleteQuestion(id){
             $alert[0].hidden=false;
         }
     })
+}
+
+function editQuestion(id){
+    $alert = $('#quiz_alert');
+    $.ajax({
+        url: `/questions/${id}`,
+        type: 'GET',
+        success: function (response){
+            $('#question_editor').html(response);
+            $('#question_editor').addClass("border-info");
+            $('#question_editor')[0].scrollIntoView();
+            $('#question_form').submit((e) => submitQuestion(e));
+            $('#id_image').change(() => previewImage());
+            answerCount = Number($("input[name='answer_count']").val());
+            blockButtons(false);
+        },
+        error: function (xhr, status, error){
+            $alert.removeClass("alert-success");
+            $alert.addClass("alert-danger");
+            $alert.html(error);
+            $alert[0].hidden=false;
+        }
+    })
+}
+
+function cancelEdit(){
+    $('#question_editor').html(questionEditor);
+    $('#question_editor').removeClass("border-info");
+    $('#question_form').submit((e) => submitQuestion(e));
 }
