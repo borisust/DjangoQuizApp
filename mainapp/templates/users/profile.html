@@ -1,0 +1,56 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}
+    User profile: {{ username }}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'profile.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container">
+    <h1>User profile: {{ username }}</h1>
+    <div class="my-3">
+        <h3>Unpublished quizzes</h3>
+        <table id="quizzes" class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="w-50">Title</th>
+                    <th class="w-25">Created at</th>
+                    <th class="w-25"></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for quiz in quizzes %}
+                <tr id="quiz_{{ quiz.id }}">
+                    <td class="w-50">{{ quiz.title }}</td>
+                    <td class="w-25">{{ quiz.created_at|date:'Y-m-d H:i' }}</td>
+                    <td class="w-25 p-0">
+                        <div class="d-inline-block w-50 p-1">
+                            <a href="{% url 'editQuiz' quizID=quiz.id %}" class="w-100 btn btn-info">Edit/Publish</a>
+                        </div><div class="d-inline-block w-50 p-1">
+                            <button type="button" onclick="deleteQuiz({{ quiz.id }})" class="w-100 btn btn-danger">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block toasts %}
+    <div id="toast_confirm_delete" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            Are you sure you want to delete a quiz? This cannot be undone.
+            <div class="mt-2 pt-2 border-top">
+                <button id="btn_confirm_delete" type="button" class="btn btn-primary btn-sm" data-bs-dismiss="toast">Confirm</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="toast">Cancel </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -3,7 +3,7 @@ import os.path
 from django.http import QueryDict, JsonResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.templatetags.static import static
 
 from mainapp.forms import QuizForm, QuestionForm
@@ -37,6 +37,11 @@ def authentication(request):
     else:
         form = AuthenticationForm()
     return render(request, 'users/login.html', {'form': form})
+
+
+def logoff(request):
+    logout(request)
+    return redirect('home')
 
 
 def createQuiz(request):
@@ -161,3 +166,25 @@ def editQuestion(request, questionID):
         return JsonResponse({'success': True, 'edit': True, 'id': question.id, 'text': question.text, 'image': url})
     else:
         return JsonResponse({'success': False, 'errors': form.errors})
+
+
+def userProfile(request):
+    if request.user.is_authenticated:
+        quizzes = Quiz.objects.filter(author=request.user)
+        return render(request, 'users/profile.html', {'quizzes': quizzes, 'username': request.user.username})
+    return redirect('authentication')
+
+
+def deleteQuiz(request, quizID):
+    if request.headers.get('x-requested-with') != 'XMLHttpRequest':
+        # ajax only
+        return redirect('home')
+    try:
+        quiz = Quiz.objects.get(pk=quizID)
+    except Quiz.DoesNotExist:
+        raise Http404
+    if request.user != quiz.author or request.method != 'POST':
+        return HttpResponseForbidden(request)
+    quiz.delete()
+    return JsonResponse({'success': True})
+

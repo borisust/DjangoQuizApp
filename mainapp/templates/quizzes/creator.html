@@ -13,7 +13,7 @@
 {% block content %}
 <div class="container">
     <h1>Quiz creator</h1>
-    <p class="text-muted">Note: the quiz is saved in your profile. You can leave and resume quiz creation at any point.</p>
+    <p class="text-muted">Note: this quiz is saved in your profile. You can leave and resume quiz creation at any point.</p>
     <div class="border m-2 p-3">
         <form action="{% url 'editQuiz' quizID=id %}" id="quiz_form" autocomplete="off">
             {% csrf_token %}
@@ -27,7 +27,7 @@
         <div id="questions" class="d-flex flex-wrap">
             {% if questions %}
                 {% for question in questions %}
-                    <div class="w-25 p-1 collapse show" style="min-width: 200px" id="question_{{ question.id }}">
+                    <div class="w-25 p-1 collapse show" style="min-width: 200px;" id="question_{{ question.id }}">
                         <div class="card h-100">
                             {% if question.image %}
                                 <img src="{{ question.image.url }}" alt="question image" class="card-img-top" />
@@ -53,7 +53,7 @@
                 {% csrf_token %}
                 {{questionForm|crispy}}
                 <h5>Answer options:</h5>
-                <p class="text-muted">Note: if no answer option is set as correct, the question will not be graded.</p>
+                <p class="text-muted">Note: if no answer option is set as correct, this question will not be graded.</p>
                 <input type="hidden" name="answer_count" value="1" />
                 <div id="answers">
                     <div id="answer_1" class="row mb-3">
@@ -71,8 +71,10 @@
                     <div class="w-100 me-2"><button id="btn_add_answer" class="btn btn-success w-100" type="button" onclick="addAnswer()" >Add answer option</button></div>
                     <div class="w-100 ms-2"><button id="btn_rm_answer" class="btn btn-danger w-100" type="button"  onclick="removeAnswer()" disabled >Remove answer option</button></div>
                 </div>
-                <button id="btn_add_question" type="submit" class="d-inline mt-2 btn btn-primary">Add question</button>
-                <span id="question_alert" class="ms-3 alert alert-danger" hidden="" ></span>
+                <div class="d-flex justify-content-center mt-2 pb-1">
+                    <div class="w-100 me-2"><button id="btn_add_question" type="submit" class="btn btn-primary w-100">Add question</button></div>
+                    <div class="w-100 ms-2"><button id="btn_reset_form" type="button" class="btn btn-warning w-100" onclick="resetQuestionForm()">Reset form</button></div>
+                </div>
             </form>
         </div>
     </div>

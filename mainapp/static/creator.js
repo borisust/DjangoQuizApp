@@ -1,3 +1,9 @@
+
+let answerCount = 1;
+const answerHtml = document.getElementById('answer_1').innerHTML;
+const questionEditor = document.getElementById('question_editor').innerHTML;
+
+// quiz form submit action
 $('#quiz_form').submit( (event) => {
     event.preventDefault();
     $('.error').remove();
@@ -34,19 +40,17 @@ $('#quiz_form').submit( (event) => {
     });
 });
 
-// answers
-let answerCount = 1;
-const answerHtml = document.getElementById('answer_1').innerHTML;
-const questionEditor = document.getElementById('question_editor').innerHTML;
-
+// lock/unlock question form buttons
 function blockButtons(bool){
     if (answerCount>1){
         document.getElementById("btn_rm_answer").disabled = bool;
     }
     document.getElementById("btn_add_answer").disabled = bool;
     document.getElementById("btn_add_question").disabled = bool;
+    document.getElementById("btn_reset_form").disabled = bool;
 }
 
+// add an answer option to the question form
 function addAnswer(){
     blockButtons(true);
     answerCount++;
@@ -65,6 +69,7 @@ function addAnswer(){
     new bootstrap.Collapse(el);
 }
 
+// remove an answer option from question form
 function removeAnswer(){
     blockButtons(true);
     const el = document.getElementById(`answer_${answerCount}`);
@@ -77,9 +82,25 @@ function removeAnswer(){
     new bootstrap.Collapse(el);
 }
 
+// preview the image to be uploaded in the question form
+function previewImage() {
+    const img_data = $('#id_image')[0].files[0];
+    const url = URL.createObjectURL(img_data);
+    $('#image_preview').html(`<img src="${url}" alt="Image preview" class="img-thumbnail" style="max-height: 200px;" />`);
+};
+$('#id_image').change(() => previewImage());
+
+function resetQuestionForm(){
+    answerCount=1;
+    $('#question_editor').html(questionEditor);
+    $('#question_editor').removeClass("border-info");
+    $('#question_form').submit((e) => submitQuestion(e));
+    $('#id_image').change(() => previewImage());
+}
+
 function submitQuestion(event){
     event.preventDefault();
-    $('#question_alert')[0].hidden=true;
+    blockButtons(true);
     $('.error').remove();
     $form = $('#question_form');
     let formData = new FormData($form[0]);
@@ -94,21 +115,18 @@ function submitQuestion(event){
                 }else{
                     displayQuestion(response.id, response.text, response.image);
                 }
-                answerCount=1;
-                $('#question_editor').html(questionEditor);
-                $('#question_editor').removeClass("border-info");
-                $('#question_form').submit((e) => submitQuestion(e));
-                $('#id_image').change(() => previewImage());
+                resetQuestionForm();
             }else{
                 $.each(response.errors, function(name,error){
                     error = `<small class="text-danger error"> ${error} </small>`;
                     $form.find(`[name=${name}]`).after(error);
                 })
+                blockButtons(false);
             }
         },
         error: function(data, status, error){
-            $('#question_alert').html(error);
-            $('#question_alert')[0].hidden=false;
+            showError(error);
+            blockButtons(false);
         },
         cache: false,
         contentType: false,
@@ -116,17 +134,9 @@ function submitQuestion(event){
 
     });
 };
-
 $('#question_form').submit((e) => submitQuestion(e));
 
-function previewImage() {
-    const img_data = $('#id_image')[0].files[0];
-    const url = URL.createObjectURL(img_data);
-    $('#image_preview').html(`<img src="${url}" alt="Image preview" class="img-thumbnail w-25" />`);
-};
-
-$('#id_image').change(() => previewImage());
-
+// add a question card after a question is added
 function displayQuestion(id, text, image){
     $('#no_questions').remove();
     let el = document.createElement("div");
@@ -147,6 +157,7 @@ function displayQuestion(id, text, image){
     new bootstrap.Collapse(el);
 }
 
+// update a question card after a question is edited
 function updateQuestion(id, text, image){
     let el = document.getElementById(`question_${id}`);
     el.innerHTML = `
@@ -165,7 +176,6 @@ function updateQuestion(id, text, image){
 
 function deleteQuestion(id){
     const csrf = document.getElementsByName('csrfmiddlewaretoken')[0].value;
-    $alert = $('#quiz_alert');
     $.ajax({
         url: `/questions/${id}/delete`,
         type: 'POST',
@@ -179,19 +189,19 @@ function deleteQuestion(id){
                     el.remove();
                 });
                 new bootstrap.Collapse(el);
+            }else{
+                showError('Something went wrong...');
             }
         },
         error: function (xhr, status, error){
-            $alert.removeClass("alert-success");
-            $alert.addClass("alert-danger");
-            $alert.html(error);
-            $alert[0].hidden=false;
+            showError(error);
         }
     })
 }
 
+// get and display a question editor
 function editQuestion(id){
-    $alert = $('#quiz_alert');
+    blockButtons(true);
     $.ajax({
         url: `/questions/${id}`,
         type: 'GET',
@@ -202,19 +212,11 @@ function editQuestion(id){
             $('#question_form').submit((e) => submitQuestion(e));
             $('#id_image').change(() => previewImage());
             answerCount = Number($("input[name='answer_count']").val());
-            blockButtons(false);
         },
         error: function (xhr, status, error){
-            $alert.removeClass("alert-success");
-            $alert.addClass("alert-danger");
-            $alert.html(error);
-            $alert[0].hidden=false;
+            showError(error);
+            blockButtons(false);
         }
     })
 }
 
-function cancelEdit(){
-    $('#question_editor').html(questionEditor);
-    $('#question_editor').removeClass("border-info");
-    $('#question_form').submit((e) => submitQuestion(e));
-}

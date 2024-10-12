@@ -13,3 +13,4 @@ class QuestionForm(ModelForm):
     class Meta:
         model = Question
         fields = ['type', 'text', 'image', 'explanation']
+        help_texts = {'explanation': 'Explanation text is shown after a quiz response is submitted.'}
