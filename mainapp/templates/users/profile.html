@@ -14,31 +14,62 @@
 <div class="container">
     <h1>User profile: {{ username }}</h1>
     <div class="my-3">
-        <h3>Unpublished quizzes</h3>
-        <table id="quizzes" class="table table-hover">
+        <h3>Live quizzes</h3>
+        {% if liveQuizzes %}
+        <table id="live_quizzes" class="table table-hover">
             <thead>
                 <tr>
-                    <th class="w-50">Title</th>
-                    <th class="w-25">Created at</th>
-                    <th class="w-25"></th>
+                    <th>Title</th>
+                    <th>Access</th>
+                    <th>Published at</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-            {% for quiz in quizzes %}
-                <tr id="quiz_{{ quiz.id }}">
-                    <td class="w-50">{{ quiz.title }}</td>
-                    <td class="w-25">{{ quiz.created_at|date:'Y-m-d H:i' }}</td>
-                    <td class="w-25 p-0">
-                        <div class="d-inline-block w-50 p-1">
-                            <a href="{% url 'editQuiz' quizID=quiz.id %}" class="w-100 btn btn-info">Edit/Publish</a>
-                        </div><div class="d-inline-block w-50 p-1">
-                            <button type="button" onclick="deleteQuiz({{ quiz.id }})" class="w-100 btn btn-danger">Delete</button>
-                        </div>
+            {% for liveQuiz in liveQuizzes %}
+                <tr id="live_quiz_{{ quiz.id }}">
+                    <td>{{ liveQuiz.quiz.title }}</td>
+                    <td>{{ liveQuiz.get_access_display }}</td>
+                    <td>{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
+                    <td>
+                        <a href="{% url 'manageLive' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-info">Results/Manage</a>
+                        <a href="{% url 'viewQuiz' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-secondary">See quiz</a>
                     </td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+        {% else %}
+            <p>You are not publishing any quizzes at the moment.</p>
+        {% endif %}
+    </div>
+    <div class="my-4">
+        <h3>Unpublished quizzes</h3>
+        {% if quizzes %}
+        <table id="quizzes" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Created at</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for quiz in quizzes %}
+                <tr id="quiz_{{ quiz.id }}">
+                    <td>{{ quiz.title }}</td>
+                    <td>{{ quiz.created_at|date:'Y-m-d H:i' }}</td>
+                    <td>
+                        <button type="button" onclick="deleteQuiz({{ quiz.id }})" class="mx-1 float-end btn btn-danger">Delete quiz</button>
+                        <a href="{% url 'editQuiz' quizID=quiz.id %}" class="mx-1 float-end btn btn-info">Edit/Publish</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>You have no unpublished quizzes at the moment.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

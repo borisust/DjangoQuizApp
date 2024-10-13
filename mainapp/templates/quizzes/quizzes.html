@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Quizzes
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Public quizzes</h1>
+    <div>
+        <table id="quizzes" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Published by</th>
+                    <th>Published at</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for quiz in quizzes %}
+                <tr id="live_quiz_{{ quiz.id }}">
+                    <td>{{ quiz.quiz.title }}</td>
+                    <td>{{ quiz.quiz.author.username }}</td>
+                    <td>{{ quiz.published_at|date:'Y-m-d H:i' }}</td>
+                    <td>
+                        <a href="{% url 'viewQuiz' liveID=quiz.id %}" class="mx-1 float-end btn btn-secondary">Take quiz</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

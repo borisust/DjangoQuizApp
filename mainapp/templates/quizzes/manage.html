@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+    Quiz:
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'publishing.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Quiz: {{ liveQuiz.quiz.title }}</h1>
+    <div>
+        <h2>Responses</h2>
+        <p>No responses yet.</p>
+    </div>
+    <hr />
+    <div>
+        <h2>Manage quiz</h2>
+        <div>
+            <form action="{% url 'manageLive' liveID=liveQuiz.id %}" method="post" id="publish_form" autocomplete="off">
+                {% csrf_token %}
+                {{form|crispy}}
+                <p id="publish_error" class="text-danger"></p>
+                <button id="btn_publish" type="submit" class="btn btn-primary">Change access</button>
+            </form>
+        </div>
+        <div class="pt-4">
+            <h4>Stop publishing</h4>
+            <p class="text-danger">
+                If you stop publishing this quiz all responses will be permanently lost.
+                The quiz will appear as unpublished in your profile.
+                You will be able to edit and publish it again.
+            </p>
+            <a href="{% url 'unpublishQuiz' liveID=liveQuiz.id %}" class="btn btn-danger">Stop publishing</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

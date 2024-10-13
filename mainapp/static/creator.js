@@ -220,3 +220,33 @@ function editQuestion(id){
     })
 }
 
+// publish a quiz
+$('#publish_form').submit((event) => {
+    event.preventDefault();
+    $('#btn_publish')[0].disabled = true;
+    $form = $('#publish_form');
+    $alert = $('#publish_error');
+    $alert.html('');
+    let formData = new FormData($form[0]);
+    $.ajax({
+        url: $form.attr('action'),
+        type: 'POST',
+        data: formData,
+        success: function (response) {
+            if (response.success){
+                window.location.href = response.url;
+            }else{
+                $alert.html(response.msg);
+                $('#btn_publish')[0].disabled = false;
+            }
+        },
+        error: function(data, status, error){
+            showError(error);
+            $('#btn_publish')[0].disabled = false;
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+
+    });
+});

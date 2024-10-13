@@ -8,6 +8,7 @@
 
 {% block scripts %}
     <script src="{% static 'creator.js' %}" defer></script>
+    <script src="{% static 'publishing.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -77,6 +78,14 @@
                 </div>
             </form>
         </div>
+    </div>
+    <div>
+        <form action="{% url 'publishQuiz' quizID=id %}" id="publish_form" autocomplete="off">
+            {% csrf_token %}
+            {{publishForm|crispy}}
+            <p id="publish_error" class="text-danger"></p>
+            <button id="btn_publish" type="submit" class="btn btn-primary">Publish quiz</button>
+        </form>
     </div>
 </div>
 {% endblock %}

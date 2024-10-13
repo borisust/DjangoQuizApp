@@ -5,9 +5,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
 from django.templatetags.static import static
+from django.urls import reverse
 
-from mainapp.forms import QuizForm, QuestionForm
-from mainapp.models import Quiz, AnswerOption, Question
+from mainapp.forms import QuizForm, QuestionForm, QuizPublishingForm
+from mainapp.models import Quiz, AnswerOption, Question, LiveQuiz
 
 
 # Create your views here.
@@ -59,6 +60,8 @@ def editQuiz(request, quizID):
         raise Http404
     if request.user != quiz.author:
         return redirect('home')
+    if quiz.live:
+        return redirect('userProfile')
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         quizForm = QuizForm(request.POST, instance=quiz)
         if quizForm.is_valid():
@@ -68,8 +71,9 @@ def editQuiz(request, quizID):
             return JsonResponse({'success': False, 'errors': quizForm.errors})
     quizForm = QuizForm(instance=quiz)
     questionForm = QuestionForm()
+    publishForm = QuizPublishingForm()
     questions = Question.objects.filter(quiz=quiz)
-    context = {'id': quizID, 'quizForm': quizForm, 'questionForm': questionForm, 'questions': questions}
+    context = {'id': quizID, 'quizForm': quizForm, 'questionForm': questionForm, 'publishForm': publishForm, 'questions': questions}
     return render(request, 'quizzes/creator.html', context)
 
 
@@ -81,7 +85,7 @@ def addQuestion(request, quizID):
         quiz = Quiz.objects.get(pk=quizID)
     except Quiz.DoesNotExist:
         raise Http404
-    if request.user != quiz.author or request.method != 'POST':
+    if request.user != quiz.author or request.method != 'POST' or quiz.live:
         return HttpResponseForbidden(request)
     form = QuestionForm(request.POST, request.FILES)
     if form.is_valid():
@@ -120,7 +124,7 @@ def deleteQuestion(request, questionID):
         question = Question.objects.get(pk=questionID)
     except Question.DoesNotExist:
         raise Http404
-    if request.user != question.quiz.author or request.method != 'POST':
+    if request.user != question.quiz.author or request.method != 'POST' or question.quiz.live:
         return HttpResponseForbidden(request)
     question.delete()
     return JsonResponse({'success': True})
@@ -134,6 +138,8 @@ def editQuestion(request, questionID):
         question = Question.objects.get(pk=questionID)
     except Question.DoesNotExist:
         raise Http404
+    if request.user != question.quiz.author or question.quiz.live:
+        return HttpResponseForbidden(request)
     if request.method == 'GET':
         form = QuestionForm(instance=question)
         answers = AnswerOption.objects.filter(question=question)
@@ -170,8 +176,10 @@ def editQuestion(request, questionID):
 
 def userProfile(request):
     if request.user.is_authenticated:
-        quizzes = Quiz.objects.filter(author=request.user)
-        return render(request, 'users/profile.html', {'quizzes': quizzes, 'username': request.user.username})
+        quizzes = Quiz.objects.filter(author=request.user, live=None).order_by('-created_at')
+        liveQuizzes = LiveQuiz.objects.filter(quiz__author=request.user).order_by('-published_at')
+        context = {'quizzes': quizzes, 'liveQuizzes': liveQuizzes, 'username': request.user.username}
+        return render(request, 'users/profile.html', context)
     return redirect('authentication')
 
 
@@ -183,8 +191,68 @@ def deleteQuiz(request, quizID):
         quiz = Quiz.objects.get(pk=quizID)
     except Quiz.DoesNotExist:
         raise Http404
-    if request.user != quiz.author or request.method != 'POST':
+    if request.user != quiz.author or request.method != 'POST' or quiz.live:
         return HttpResponseForbidden(request)
     quiz.delete()
     return JsonResponse({'success': True})
 
+
+def publishQuiz(request, quizID):
+    if request.headers.get('x-requested-with') != 'XMLHttpRequest':
+        # ajax only
+        return redirect('home')
+    try:
+        quiz = Quiz.objects.get(pk=quizID)
+    except Quiz.DoesNotExist:
+        raise Http404
+    if request.user != quiz.author or request.method != 'POST' or quiz.live:
+        return HttpResponseForbidden(request)
+    questions = Question.objects.filter(quiz=quiz).count()
+    if questions < 1:
+        return JsonResponse({'success': False, 'msg': 'You must add at least one question before publishing.'})
+    form = QuizPublishingForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'success': False, 'msg': 'Invalid quiz access.'})
+    liveQuiz = form.save(commit=False)
+    liveQuiz.quiz = quiz
+    liveQuiz.save()
+    quiz.live = liveQuiz
+    quiz.save()
+    return JsonResponse({'success': True, 'url': reverse('userProfile')})
+
+
+def quizzes(request):
+    publicQuizzes = LiveQuiz.objects.filter(access='PUB').order_by('-published_at')
+    return render(request, 'quizzes/quizzes.html', {'quizzes': publicQuizzes})
+
+
+def viewQuiz(request, liveID):
+    return render(request, 'quizzes/quiz.html')
+
+
+def manageLiveQuiz(request, liveID):
+    try:
+        liveQuiz = LiveQuiz.objects.get(pk=liveID)
+    except LiveQuiz.DoesNotExist:
+        raise Http404
+    if request.user != liveQuiz.quiz.author:
+        return HttpResponseForbidden(request)
+    if request.method == 'POST':
+        form = QuizPublishingForm(request.POST, instance=liveQuiz)
+        if form.is_valid():
+            form.save()
+            return redirect('manageLive', liveID=liveID)
+    else:
+        form = QuizPublishingForm(instance=liveQuiz)
+    return render(request, 'quizzes/manage.html', {'form': form, 'liveQuiz': liveQuiz})
+
+
+def unpublishQuiz(request, liveID):
+    try:
+        liveQuiz = LiveQuiz.objects.get(pk=liveID)
+    except LiveQuiz.DoesNotExist:
+        raise Http404
+    if request.user != liveQuiz.quiz.author:
+        return HttpResponseForbidden(request)
+    liveQuiz.delete()
+    return redirect('userProfile')
