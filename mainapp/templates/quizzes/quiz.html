@@ -1,11 +1,63 @@
 {% extends 'layout.html' %}
+{% load static %}
 
 {% block title %}
-    Quiz:
+    Quiz: {{ liveQuiz.quiz.title }}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'quiz.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>PLACEHOLDER</h1>
+    <h1>Quiz: {{ liveQuiz.quiz.title }}</h1>
+    <form action="{% url 'submitResponse' liveID=liveQuiz.id %}" method="post" >
+        {% csrf_token %}
+        {% if liveQuiz.access == 'PRT' %}
+            <input type="hidden" name="password" value="{{ liveQuiz.password }}"/>
+        {% endif %}
+        {% for question in questions %}
+            <div id="question_{{ forloop.counter }}" class="question_block collapse border p-4">
+                {% if question.image %}
+                    <img src="{{question.image.url}}" class="img-fluid border" style="max-width: 75vw; max-height: 50vh;" alt="Question image">
+                {% endif %}
+                <div class="my-3">
+                    <h2>{{question.text}}</h2>
+                    {% for answer in question.answeroption_set.all %}
+                    <div class="p-1">
+                        {% if question.type == 'RB' %}
+                            <input type="radio" class="form-check-input" name="question_{{ question.id }}" value="{{ answer.id }}" id="answer_{{answer.id}}_check" />
+                        {% else %}
+                            <input type="checkbox" class="form-check-input" name="question_{{ question.id }}" value="{{ answer.id }}" id="answer_{{answer.id}}_check" />
+                        {% endif %}
+                        <label class="form-check-label" id="answer_{{answer.id}}_check">
+                            {{ answer.text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="p-4">
+                    {% if forloop.counter != 1 %}
+                        <button type="button" class="float-start btn btn-secondary" onclick="prevQuestion()">Previous question</button>
+                    {% endif %}
+                    {% if forloop.counter != questions.count %}
+                        <button type="button" class="float-end btn btn-secondary" onclick="nextQuestion()">Next question</button>
+                    {% else %}
+                        <button type="submit" class="float-end btn btn-success">Submit response</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </form>
+    <nav aria-label="Question navigation" class="fixed-bottom d-flex justify-content-center">
+        <ul class="pagination">
+            {% for question in questions %}
+            <li class="page-item">
+                <button type="button" class="page-link" onclick="selectQuestion({{forloop.counter}})">{{forloop.counter}}</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
 </div>
 {% endblock %}

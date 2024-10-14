@@ -32,7 +32,8 @@
                     <td>{{ liveQuiz.get_access_display }}</td>
                     <td>{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
                     <td>
-                        <a href="{% url 'manageLive' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-info">Results/Manage</a>
+                        <a href="{% url 'manageLive' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-warning">Manage</a>
+                        <a href="{% url 'viewAllResponses' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-info">Responses</a>
                         <a href="{% url 'viewQuiz' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-secondary">See quiz</a>
                     </td>
                 </tr>
@@ -72,16 +73,22 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
-
-{% block toasts %}
-    <div id="toast_confirm_delete" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-body">
-            Are you sure you want to delete a quiz? This cannot be undone.
-            <div class="mt-2 pt-2 border-top">
-                <button id="btn_confirm_delete" type="button" class="btn btn-primary btn-sm" data-bs-dismiss="toast">Confirm</button>
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="toast">Cancel </button>
-            </div>
-        </div>
+<div id="modal_confirm_delete" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmation required</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete a quiz? This cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="btn_confirm_delete" type="button" class="btn btn-danger">Delete quiz</button>
+      </div>
     </div>
+  </div>
+</div>
+
 {% endblock %}

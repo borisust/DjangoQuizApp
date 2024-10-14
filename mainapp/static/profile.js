@@ -2,9 +2,8 @@ const csrf = document.getElementsByName('csrfmiddlewaretoken')[0].value;
 
 
 function deleteQuiz(id){
-    let btnConfirm = document.getElementById('btn_confirm_delete');
-    btnConfirm.replaceWith(btnConfirm.cloneNode(true));
-    $('#btn_confirm_delete').click(()=>{
+    const modal = new bootstrap.Modal(document.getElementById('modal_confirm_delete'));
+    $('#btn_confirm_delete')[0].onclick = ()=>{
         $.ajax({
             url: `/quizzes/${id}/delete`,
             type: 'POST',
@@ -14,6 +13,7 @@ function deleteQuiz(id){
             success: function(response){
                 if (response.success){
                     document.getElementById(`quiz_${id}`).remove();
+                    modal.hide();
                 }else{
                     showError('Something went wrong...');
                 }
@@ -22,9 +22,7 @@ function deleteQuiz(id){
                 showError(error);
             }
         });
-    });
-    const toastEl = document.getElementById('toast_confirm_delete');
-    const toast = new bootstrap.Toast(toastEl);
-    toast.show();
+    };
+    modal.show();
 }
 

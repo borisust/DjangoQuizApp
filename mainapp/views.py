@@ -8,7 +8,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from mainapp.forms import QuizForm, QuestionForm, QuizPublishingForm
-from mainapp.models import Quiz, AnswerOption, Question, LiveQuiz
+from mainapp.models import Quiz, AnswerOption, Question, LiveQuiz, QuizResponse, QuestionResponse
 
 
 # Create your views here.
@@ -227,7 +227,17 @@ def quizzes(request):
 
 
 def viewQuiz(request, liveID):
-    return render(request, 'quizzes/quiz.html')
+    try:
+        liveQuiz = LiveQuiz.objects.get(pk=liveID)
+    except LiveQuiz.DoesNotExist:
+        raise Http404
+    if liveQuiz.access == 'PRT' and not (request.method == 'POST' and request.POST.get('password') == liveQuiz.password):
+        context = {'url': reverse('viewQuiz', kwargs={'liveID': liveID}), 'failed': request.method == 'POST'}
+        return render(request, 'password.html', context)
+    if liveQuiz.access == 'PRV' and request.user != liveQuiz.quiz.author:
+        return HttpResponseForbidden(request)
+    questions = Question.objects.filter(quiz=liveQuiz.quiz)
+    return render(request, 'quizzes/quiz.html', {'liveQuiz': liveQuiz, 'questions': questions})
 
 
 def manageLiveQuiz(request, liveID):
@@ -256,3 +266,43 @@ def unpublishQuiz(request, liveID):
         return HttpResponseForbidden(request)
     liveQuiz.delete()
     return redirect('userProfile')
+
+
+def submitResponse(request, liveID):
+    if request.method != 'POST':
+        return redirect('viewQuiz', liveID=liveID)
+    try:
+        liveQuiz = LiveQuiz.objects.get(pk=liveID)
+    except LiveQuiz.DoesNotExist:
+        raise Http404
+    if liveQuiz.access == 'PRT' and request.POST.get('password') != liveQuiz.password:
+        return HttpResponseForbidden(request)
+    if liveQuiz.access == 'PRV' and request.user != liveQuiz.quiz.author:
+        return HttpResponseForbidden(request)
+    response = QuizResponse(quiz=liveQuiz, responder=request.user)
+    response.save()
+    for question in liveQuiz.quiz.question_set.all():
+        answers = request.POST.getlist('question_'+str(question.id))
+        for answerID in answers:
+            try:
+                answer = AnswerOption.objects.get(pk=int(answerID))
+            except AnswerOption.DoesNotExist:
+                continue
+            questionResponse = QuestionResponse(response=response, question=question, answer=answer)
+            questionResponse.save()
+    return redirect('viewResponse', responseID=response.pk)
+
+
+def viewResponse(request, responseID):
+    return render(request, 'quizzes/response.html')
+
+
+def viewAllResponses(request, liveID):
+    try:
+        liveQuiz = LiveQuiz.objects.get(pk=liveID)
+    except LiveQuiz.DoesNotExist:
+        raise Http404
+    if request.user != liveQuiz.quiz.author:
+        return HttpResponseForbidden(request)
+    responses = QuizResponse.objects.filter(quiz=liveQuiz)
+    return render(request, 'quizzes/all_responses.html', {'responses': responses})
