@@ -27,7 +27,7 @@
             </thead>
             <tbody>
             {% for liveQuiz in liveQuizzes %}
-                <tr id="live_quiz_{{ quiz.id }}">
+                <tr id="live_quiz_{{ liveQuiz.id }}">
                     <td>{{ liveQuiz.quiz.title }}</td>
                     <td>{{ liveQuiz.get_access_display }}</td>
                     <td>{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
@@ -70,6 +70,33 @@
         </table>
         {% else %}
             <p>You have no unpublished quizzes at the moment.</p>
+        {% endif %}
+    </div>
+    <div class="my-4">
+        <h3>Your responses</h3>
+        {% if responses %}
+        <table id="responses" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Quiz title</th>
+                    <th>Submitted at</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for response in responses %}
+                <tr id="response_{{ response.id }}">
+                    <td>{{ response.live.quiz.title }}</td>
+                    <td>{{ response.submitted_at|date:'Y-m-d H:i' }}</td>
+                    <td>
+                        <a href="{% url 'viewResponse' responseID=response.id %}" class="mx-1 float-end btn btn-secondary">Review</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>You have not submitted any quiz responses yet.</p>
         {% endif %}
     </div>
 </div>

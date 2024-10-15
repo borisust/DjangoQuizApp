@@ -96,12 +96,13 @@ def addQuestion(request, quizID):
             errors = {'answer_count': 'At least 2 answer options are required.'}
             return JsonResponse({'success': False, 'errors': errors})
         answersList = []
+        correctAnswers = request.POST.getlist('correct_answers')
         for i in range(1, answerCount+1):
             if ('answer_'+str(i)+'_text') not in request.POST or request.POST['answer_'+str(i)+'_text'] == "":
                 errors = {'answer_count': 'Answer text cannot be blank.'}
                 return JsonResponse({'success': False, 'errors': errors})
             answerText = request.POST['answer_'+str(i)+'_text']
-            answerIsCorrect = ('answer_'+str(i)+'_is_correct') in request.POST
+            answerIsCorrect = str(i) in correctAnswers
             answer = AnswerOption(text=answerText, is_correct=answerIsCorrect, question=question)
             answersList.append(answer)
         question.save()
@@ -151,12 +152,13 @@ def editQuestion(request, questionID):
             errors = {'answer_count': 'At least 2 answer options are required.'}
             return JsonResponse({'success': False, 'errors': errors})
         answersList = []
+        correctAnswers = request.POST.getlist('correct_answers')
         for i in range(1, answerCount+1):
             if ('answer_'+str(i)+'_text') not in request.POST or request.POST['answer_'+str(i)+'_text'] == "":
                 errors = {'answer_count': 'Answer text cannot be blank.'}
                 return JsonResponse({'success': False, 'errors': errors})
             answerText = request.POST['answer_'+str(i)+'_text']
-            answerIsCorrect = ('answer_'+str(i)+'_is_correct') in request.POST
+            answerIsCorrect = str(i) in correctAnswers
             answer = AnswerOption(text=answerText, is_correct=answerIsCorrect, question=question)
             answersList.append(answer)
         form.save()
@@ -176,9 +178,10 @@ def editQuestion(request, questionID):
 
 def userProfile(request):
     if request.user.is_authenticated:
-        quizzes = Quiz.objects.filter(author=request.user, live=None).order_by('-created_at')
+        savedQuizzes = Quiz.objects.filter(author=request.user, live=None).order_by('-created_at')
         liveQuizzes = LiveQuiz.objects.filter(quiz__author=request.user).order_by('-published_at')
-        context = {'quizzes': quizzes, 'liveQuizzes': liveQuizzes, 'username': request.user.username}
+        responses = QuizResponse.objects.filter(responder=request.user).order_by('-submitted_at')
+        context = {'quizzes': savedQuizzes, 'liveQuizzes': liveQuizzes,'responses': responses, 'username': request.user.username}
         return render(request, 'users/profile.html', context)
     return redirect('authentication')
 
@@ -279,7 +282,10 @@ def submitResponse(request, liveID):
         return HttpResponseForbidden(request)
     if liveQuiz.access == 'PRV' and request.user != liveQuiz.quiz.author:
         return HttpResponseForbidden(request)
-    response = QuizResponse(quiz=liveQuiz, responder=request.user)
+    user = None
+    if request.user.is_authenticated:
+        user = request.user
+    response = QuizResponse(live=liveQuiz, responder=user)
     response.save()
     for question in liveQuiz.quiz.question_set.all():
         answers = request.POST.getlist('question_'+str(question.id))
@@ -304,5 +310,5 @@ def viewAllResponses(request, liveID):
         raise Http404
     if request.user != liveQuiz.quiz.author:
         return HttpResponseForbidden(request)
-    responses = QuizResponse.objects.filter(quiz=liveQuiz)
+    responses = QuizResponse.objects.filter(live=liveQuiz)
     return render(request, 'quizzes/all_responses.html', {'responses': responses})

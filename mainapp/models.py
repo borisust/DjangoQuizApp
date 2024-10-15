@@ -12,8 +12,8 @@ class Quiz(models.Model):
 
 
 class Question(models.Model):
-    TYPES = (('RB', 'Radio Buttons'), ('CB', 'Checkbox'))
-    type = models.CharField(max_length=2, choices=TYPES)
+    TYPES = (('RB', 'Radio Buttons'), ('CB', 'Checkboxes'))
+    type = models.CharField(max_length=2, choices=TYPES, default='RB')
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     text = models.CharField(max_length=150)
     image = models.ImageField(upload_to='images/', default=None, blank=True, null=True)
@@ -35,7 +35,7 @@ class LiveQuiz(models.Model):
 
 
 class QuizResponse(models.Model):
-    quiz = models.ForeignKey(LiveQuiz, on_delete=models.CASCADE)
+    live = models.ForeignKey(LiveQuiz, on_delete=models.CASCADE)
     responder = models.ForeignKey(User, default=None, blank=True, null=True, on_delete=models.SET_NULL)
     submitted_at = models.DateTimeField(auto_now_add=True)
 

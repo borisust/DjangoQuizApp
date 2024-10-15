@@ -1,6 +1,5 @@
 
 let answerCount = 1;
-const answerHtml = document.getElementById('answer_1').innerHTML;
 const questionEditor = document.getElementById('question_editor').innerHTML;
 
 // quiz form submit action
@@ -58,11 +57,13 @@ function addAnswer(){
     let el = document.createElement("div");
     el.id = `answer_${answerCount}`;
     el.classList.add("collapse", "row", "mb-3");
-    let newAnswer = answerHtml;
+    let newAnswer = document.getElementById('answer_1').innerHTML;
     newAnswer = newAnswer.replace(RegExp("answer_1", "g"), `answer_${answerCount}`);
-    newAnswer = newAnswer.replace(RegExp("Answer 1:", "g"), `Answer ${answerCount}:`);
+    newAnswer = newAnswer.replace("Answer 1:", `Answer ${answerCount}:`);
+    newAnswer = newAnswer.replace(RegExp('value="1"', "g"), `value="${answerCount}"`);
     el.innerHTML = newAnswer;
     document.getElementById("answers").appendChild(el);
+    $(`#answer_${answerCount}_text`).val("");
     el.addEventListener('shown.bs.collapse', ()=>{
         blockButtons(false);
     });
@@ -90,12 +91,23 @@ function previewImage() {
 };
 $('#id_image').change(() => previewImage());
 
+function changeQuestionType(){
+    type = $('#id_type')[0].selectedOptions[0].value;
+    if (type=='RB'){
+        $('.answer_check').prop('type','radio');
+    }else if (type=='CB'){
+        $('.answer_check').prop('type','checkbox');
+    }
+}
+$('#id_type').change(()=>changeQuestionType());
+
 function resetQuestionForm(){
     answerCount=1;
     $('#question_editor').html(questionEditor);
     $('#question_editor').removeClass("border-info");
     $('#question_form').submit((e) => submitQuestion(e));
     $('#id_image').change(() => previewImage());
+    $('#id_type').change(()=>changeQuestionType());
 }
 
 function submitQuestion(event){
@@ -211,6 +223,7 @@ function editQuestion(id){
             $('#question_editor')[0].scrollIntoView();
             $('#question_form').submit((e) => submitQuestion(e));
             $('#id_image').change(() => previewImage());
+            $('#id_type').change(()=>changeQuestionType());
             answerCount = Number($("input[name='answer_count']").val());
         },
         error: function (xhr, status, error){
@@ -250,3 +263,4 @@ $('#publish_form').submit((event) => {
 
     });
 });
+

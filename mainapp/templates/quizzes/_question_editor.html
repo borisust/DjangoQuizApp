@@ -19,10 +19,17 @@
                     <input id="answer_{{ forloop.counter }}_text" class="textinput form-control" name="answer_{{ forloop.counter }}_text" type="text" maxlength="150" required="" value="{{ answer.text }}">
                 </div>
                 <div class="col pt-1">
-                    <input id="answer_{{ forloop.counter }}_cb" class="checkboxinput form-check-input" type="checkbox" name="answer_{{ forloop.counter }}_is_correct"
-                    {% if answer.is_correct %}
-                        checked=""
-                    {% endif %}
+                    <input id="answer_{{ forloop.counter }}_cb" class="answer_check form-check-input"
+                        {% if question.type == 'RB' %}
+                            type="radio"
+                        {% elif question.type == 'CB' %}
+                            type="checkbox"
+                        {% endif %}
+                        name="correct_answers"
+                        value="{{ forloop.counter }}"
+                        {% if answer.is_correct %}
+                            checked=""
+                        {% endif %}
                     >
                     <label class="form-check-label" for="answer_{{ forloop.counter }}_cb">Correct</label>
                 </div>
