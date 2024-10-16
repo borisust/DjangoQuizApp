@@ -1,6 +1,5 @@
-import os.path
-
-from django.http import QueryDict, JsonResponse, Http404, HttpResponseForbidden
+from django.core.paginator import Paginator
+from django.http import JsonResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
@@ -178,10 +177,33 @@ def editQuestion(request, questionID):
 
 def userProfile(request):
     if request.user.is_authenticated:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'content' in request.GET:
+            content = request.GET['content']
+            page_number = request.GET.get('page', 1)
+            query = request.GET.get('query', '')
+            if content == 'live_quizzes':
+                querySet = LiveQuiz.objects.filter(quiz__author=request.user, quiz__title__contains=query).order_by('-published_at')
+                template = 'users/_live_quizzes_table.html'
+            elif content == 'saved_quizzes':
+                querySet = Quiz.objects.filter(author=request.user, live=None, title__contains=query).order_by('-created_at')
+                template = 'users/_saved_quizzes_table.html'
+            elif content == 'responses':
+                querySet = QuizResponse.objects.filter(responder=request.user, live__quiz__title__contains=query).order_by('-submitted_at')
+                template = 'users/_responses_table.html'
+            else:
+                raise Http404
+            page = Paginator(querySet, 10).get_page(page_number)
+            return render(request, template, {'page': page})
         savedQuizzes = Quiz.objects.filter(author=request.user, live=None).order_by('-created_at')
         liveQuizzes = LiveQuiz.objects.filter(quiz__author=request.user).order_by('-published_at')
         responses = QuizResponse.objects.filter(responder=request.user).order_by('-submitted_at')
-        context = {'quizzes': savedQuizzes, 'liveQuizzes': liveQuizzes,'responses': responses, 'username': request.user.username}
+        liveQuizzesPage = Paginator(liveQuizzes, 10).get_page(1)
+        savedQuizzesPage = Paginator(savedQuizzes, 10).get_page(1)
+        responsesPage = Paginator(responses, 10).get_page(1)
+        context = {'savedQuizzesPage': savedQuizzesPage,
+                   'liveQuizzesPage': liveQuizzesPage,
+                   'responsesPage': responsesPage,
+                   'username': request.user.username}
         return render(request, 'users/profile.html', context)
     return redirect('authentication')
 
@@ -226,7 +248,14 @@ def publishQuiz(request, quizID):
 
 def quizzes(request):
     publicQuizzes = LiveQuiz.objects.filter(access='PUB').order_by('-published_at')
-    return render(request, 'quizzes/quizzes.html', {'quizzes': publicQuizzes})
+    query = request.GET.get('query', '')
+    if query != '':
+        publicQuizzes = publicQuizzes.filter(quiz__title__contains=query)
+    page_number = request.GET.get('page', 1)
+    page = Paginator(publicQuizzes, 15).get_page(page_number)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':     # ajax
+        return render(request, 'quizzes/_quizzes_table.html', {'page': page})
+    return render(request, 'quizzes/quizzes.html', {'page': page})
 
 
 def viewQuiz(request, liveID):
@@ -300,7 +329,16 @@ def submitResponse(request, liveID):
 
 
 def viewResponse(request, responseID):
-    return render(request, 'quizzes/response.html')
+    try:
+        response = QuizResponse.objects.get(id=responseID)
+    except QuizResponse.DoesNotExist:
+        raise Http404
+    questions = Question.objects.filter(quiz=response.live.quiz)
+    selectedAnswers = QuestionResponse.objects.filter(response=response).values_list('answer__id', flat=True)
+    numCorrectAll = AnswerOption.objects.filter(question__quiz=response.live.quiz, is_correct=True).count()
+    numCorrectSelected = QuestionResponse.objects.filter(response=response, answer__is_correct=True).count()
+    context = {'response': response, 'questions': questions, 'selectedAnswers': selectedAnswers, 'numCorrectAll': numCorrectAll, 'numCorrectSelected': numCorrectSelected}
+    return render(request, 'quizzes/response.html', context)
 
 
 def viewAllResponses(request, liveID):

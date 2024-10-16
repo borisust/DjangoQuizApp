@@ -12,8 +12,8 @@ function deleteQuiz(id){
             },
             success: function(response){
                 if (response.success){
-                    document.getElementById(`quiz_${id}`).remove();
                     modal.hide();
+                    getPage('saved_quizzes', getCurrPageNum('saved_quizzes'));
                 }else{
                     showError('Something went wrong...');
                 }

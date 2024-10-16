@@ -6,95 +6,70 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{% static 'pagination.js' %}" defer></script>
     <script src="{% static 'profile.js' %}" defer></script>
 {% endblock %}
 
 {% block content %}
 {% csrf_token %}
-<div class="container">
+<div class="container mb-5">
     <h1>User profile: {{ username }}</h1>
     <div class="my-3">
-        <h3>Live quizzes</h3>
-        {% if liveQuizzes %}
-        <table id="live_quizzes" class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Access</th>
-                    <th>Published at</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for liveQuiz in liveQuizzes %}
-                <tr id="live_quiz_{{ liveQuiz.id }}">
-                    <td>{{ liveQuiz.quiz.title }}</td>
-                    <td>{{ liveQuiz.get_access_display }}</td>
-                    <td>{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
-                    <td>
-                        <a href="{% url 'manageLive' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-warning">Manage</a>
-                        <a href="{% url 'viewAllResponses' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-info">Responses</a>
-                        <a href="{% url 'viewQuiz' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-secondary">See quiz</a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+         <div>
+            <h3 class="d-inline">Live quizzes</h3>
+            <div class="float-end me-4 mt-1 spinner-border" id="live_quizzes_spinner" role="status" hidden="" >
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        {% if liveQuizzesPage %}
+        <div class="input-group mb-1 mt-3">
+            <input type="search" class="form-control rounded" id="live_quizzes_search" placeholder="Search" aria-label="Search" />
+            <button type="button" class="btn btn-outline-primary" onclick="search('live_quizzes')"><i class="bi bi-search"></i> search</button>
+            <button type="button" class="btn btn-outline-danger" onclick="reset('live_quizzes')"><i class="bi bi-arrow-clockwise"></i> reset</button>
+        </div>
+        <div id="live_quizzes_container">
+            {% include 'users/_live_quizzes_table.html' with page=liveQuizzesPage only %}
+        </div>
         {% else %}
             <p>You are not publishing any quizzes at the moment.</p>
         {% endif %}
     </div>
     <div class="my-4">
-        <h3>Unpublished quizzes</h3>
-        {% if quizzes %}
-        <table id="quizzes" class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Created at</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for quiz in quizzes %}
-                <tr id="quiz_{{ quiz.id }}">
-                    <td>{{ quiz.title }}</td>
-                    <td>{{ quiz.created_at|date:'Y-m-d H:i' }}</td>
-                    <td>
-                        <button type="button" onclick="deleteQuiz({{ quiz.id }})" class="mx-1 float-end btn btn-danger">Delete quiz</button>
-                        <a href="{% url 'editQuiz' quizID=quiz.id %}" class="mx-1 float-end btn btn-info">Edit/Publish</a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div>
+            <h3 class="d-inline">Unpublished quizzes</h3>
+            <div class="float-end me-4 mt-1 spinner-border" id="saved_quizzes_spinner" role="status" hidden="" >
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        {% if savedQuizzesPage %}
+        <div class="input-group mb-1 mt-3">
+            <input type="search" class="form-control rounded" id="saved_quizzes_search" placeholder="Search" aria-label="Search" />
+            <button type="button" class="btn btn-outline-primary" onclick="search('saved_quizzes')"><i class="bi bi-search"></i> search</button>
+            <button type="button" class="btn btn-outline-danger" onclick="reset('saved_quizzes')"><i class="bi bi-arrow-clockwise"></i> reset</button>
+        </div>
+        <div id="saved_quizzes_container">
+            {% include 'users/_saved_quizzes_table.html' with page=savedQuizzesPage only %}
+        </div>
         {% else %}
             <p>You have no unpublished quizzes at the moment.</p>
         {% endif %}
     </div>
     <div class="my-4">
-        <h3>Your responses</h3>
-        {% if responses %}
-        <table id="responses" class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Quiz title</th>
-                    <th>Submitted at</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for response in responses %}
-                <tr id="response_{{ response.id }}">
-                    <td>{{ response.live.quiz.title }}</td>
-                    <td>{{ response.submitted_at|date:'Y-m-d H:i' }}</td>
-                    <td>
-                        <a href="{% url 'viewResponse' responseID=response.id %}" class="mx-1 float-end btn btn-secondary">Review</a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <div>
+            <h3 class="d-inline">Your responses</h3>
+            <div class="float-end me-4 mt-1 spinner-border" id="responses_spinner" role="status" hidden="" >
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        {% if responsesPage %}
+        <div class="input-group mb-1 mt-3">
+            <input type="search" class="form-control rounded" id="responses_search" placeholder="Search" aria-label="Search" />
+            <button type="button" class="btn btn-outline-primary" onclick="search('responses')"><i class="bi bi-search"></i> search</button>
+            <button type="button" class="btn btn-outline-danger" onclick="reset('responses')"><i class="bi bi-arrow-clockwise"></i> reset</button>
+        </div>
+        <div id="responses_container">
+            {% include 'users/_responses_table.html' with page=responsesPage only %}
+        </div>
         {% else %}
             <p>You have not submitted any quiz responses yet.</p>
         {% endif %}

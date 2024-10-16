@@ -157,11 +157,11 @@ function displayQuestion(id, text, image){
     el.style.minWidth = "200px";
     el.innerHTML = `
         <div class="card h-100">
-        <img src="${image}" alt="question image" class="card-img-top" />
+        <img src="${image}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
         <div class="card-body">
         <h5 class="card-title">${text}</h5>
-        <button class="btn btn-info" type="button" onclick="editQuestion(${id})">Edit question</button>
-        <button class="btn btn-danger" type="button" onclick="deleteQuestion(${id})">Delete question</button>
+        <button class="btn btn-info w-100 mb-2" type="button" onclick="editQuestion(${id})"><i class="bi bi-pen"></i> Edit question</button>
+        <button class="btn btn-danger w-100" type="button" onclick="deleteQuestion(${id})"><i class="bi bi-trash"></i> Delete question</button>
         </div>
         </div>
     `;
@@ -174,11 +174,11 @@ function updateQuestion(id, text, image){
     let el = document.getElementById(`question_${id}`);
     el.innerHTML = `
         <div class="card h-100">
-        <img src="${image}" alt="question image" class="card-img-top" />
+        <img src="${image}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
         <div class="card-body">
         <h5 class="card-title">${text}</h5>
-        <button class="btn btn-info" type="button" onclick="editQuestion(${id})">Edit question</button>
-        <button class="btn btn-danger" type="button" onclick="deleteQuestion(${id})">Delete question</button>
+        <button class="btn btn-info w-100 mb-2" type="button" onclick="editQuestion(${id})"><i class="bi bi-pen"></i> Edit question</button>
+        <button class="btn btn-danger w-100" type="button" onclick="deleteQuestion(${id})"><i class="bi bi-trash"></i> Delete question</button>
         </div>
         </div>
     `;

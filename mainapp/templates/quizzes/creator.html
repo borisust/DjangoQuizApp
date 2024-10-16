@@ -19,7 +19,7 @@
         <form action="{% url 'editQuiz' quizID=id %}" id="quiz_form" autocomplete="off">
             {% csrf_token %}
             {{quizForm|crispy}}
-            <button type="submit" class="d-inline btn btn-primary">Save</button>
+            <button type="submit" class="d-inline btn btn-primary"><i class="bi bi-floppy"></i> Save</button>
             <p id="quiz_alert" class="d-inline ms-3 alert"></p>
         </form>
     </div>
@@ -31,14 +31,14 @@
                     <div class="w-25 p-1 collapse show" style="min-width: 200px;" id="question_{{ question.id }}">
                         <div class="card h-100">
                             {% if question.image %}
-                                <img src="{{ question.image.url }}" alt="question image" class="card-img-top" />
+                                <img src="{{ question.image.url }}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
                             {% else %}
-                                <img src="{% static 'placeholder.svg' %}" alt="question image" class="card-img-top" />
+                                <img src="{% static 'placeholder.svg' %}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
                             {% endif %}
                             <div class="card-body">
                                 <h5 class="card-title">{{ question.text }}</h5>
-                                <button class="btn btn-info" type="button" onclick="editQuestion({{ question.id }})">Edit question</button>
-                                <button class="btn btn-danger" type="button" onclick="deleteQuestion({{ question.id }})">Delete question</button>
+                                <button class="btn btn-info w-100 mb-2" type="button" onclick="editQuestion({{ question.id }})"><i class="bi bi-pen"></i> Edit question</button>
+                                <button class="btn btn-danger w-100" type="button" onclick="deleteQuestion({{ question.id }})"><i class="bi bi-trash"></i> Delete question</button>
                             </div>
                         </div>
                     </div>
@@ -69,12 +69,12 @@
                     </div>
                 </div>
                 <div class="d-flex justify-content-center mt-2 pb-1">
-                    <div class="w-100 me-2"><button id="btn_add_answer" class="btn btn-success w-100" type="button" onclick="addAnswer()" >Add answer option</button></div>
-                    <div class="w-100 ms-2"><button id="btn_rm_answer" class="btn btn-danger w-100" type="button"  onclick="removeAnswer()" disabled >Remove answer option</button></div>
+                    <div class="w-100 me-2"><button id="btn_add_answer" class="btn btn-success w-100" type="button" onclick="addAnswer()" ><i class="bi bi-plus-circle"></i> Add answer option</button></div>
+                    <div class="w-100 ms-2"><button id="btn_rm_answer" class="btn btn-danger w-100" type="button"  onclick="removeAnswer()" disabled ><i class="bi bi-dash-circle"></i> Remove answer option</button></div>
                 </div>
                 <div class="d-flex justify-content-center mt-2 pb-1">
-                    <div class="w-100 me-2"><button id="btn_add_question" type="submit" class="btn btn-primary w-100">Add question</button></div>
-                    <div class="w-100 ms-2"><button id="btn_reset_form" type="button" class="btn btn-warning w-100" onclick="resetQuestionForm()">Reset form</button></div>
+                    <div class="w-100 me-2"><button id="btn_add_question" type="submit" class="btn btn-primary w-100"><i class="bi bi-calendar2-plus"></i> Add question</button></div>
+                    <div class="w-100 ms-2"><button id="btn_reset_form" type="button" class="btn btn-warning w-100" onclick="resetQuestionForm()"><i class="bi bi-arrow-clockwise"></i> Reset form</button></div>
                 </div>
             </form>
         </div>
@@ -84,7 +84,7 @@
             {% csrf_token %}
             {{publishForm|crispy}}
             <p id="publish_error" class="text-danger"></p>
-            <button id="btn_publish" type="submit" class="btn btn-primary">Publish quiz</button>
+            <button id="btn_publish" type="submit" class="btn btn-primary"><i class="bi bi-send-plus"></i> Publish quiz</button>
         </form>
     </div>
 </div>

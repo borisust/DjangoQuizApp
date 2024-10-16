@@ -1,0 +1,39 @@
+<table id="live_quizzes" class="table table-hover">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Access</th>
+            <th>Published at</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for liveQuiz in page %}
+        <tr id="live_quiz_{{ liveQuiz.id }}">
+            <td>{{ liveQuiz.quiz.title }}</td>
+            <td>{{ liveQuiz.get_access_display }}</td>
+            <td>{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
+            <td>
+                <a href="{% url 'manageLive' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-warning">Manage</a>
+                <a href="{% url 'viewAllResponses' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-info">Responses</a>
+                <a href="{% url 'viewQuiz' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-secondary">See quiz</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<nav class="d-flex flex-row-reverse">
+    <ul class="pagination">
+        {% if page.has_previous %}
+            <li class="page-item"><button class="page-link" onclick="getPage('live_quizzes', 1)" ><i class="bi bi-chevron-double-left"></i>first</button></li>
+            <li class="page-item"><button class="page-link " onclick="getPage('live_quizzes',{{ page.previous_page_number }})"><i class="bi bi-chevron-left"></i></button></li>
+        {% endif %}
+        <li class="page-item active">
+            <a class="page-link" href="#">Page {{ page.number }} of {{ page.paginator.num_pages }}</a>
+        </li>
+        {% if page.has_next %}
+            <li class="page-item"><button class="page-link" onclick="getPage('live_quizzes', {{ page.next_page_number }})"><i class="bi bi-chevron-right"></i></button></li>
+            <li class="page-item"><button class="page-link" onclick="getPage('live_quizzes', {{ page.paginator.num_pages }})">last <i class="bi bi-chevron-double-right"></i></button></li>
+        {% endif %}
+    </ul>
+</nav>
