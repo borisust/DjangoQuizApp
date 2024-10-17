@@ -337,7 +337,11 @@ def viewResponse(request, responseID):
     selectedAnswers = QuestionResponse.objects.filter(response=response).values_list('answer__id', flat=True)
     numCorrectAll = AnswerOption.objects.filter(question__quiz=response.live.quiz, is_correct=True).count()
     numCorrectSelected = QuestionResponse.objects.filter(response=response, answer__is_correct=True).count()
-    context = {'response': response, 'questions': questions, 'selectedAnswers': selectedAnswers, 'numCorrectAll': numCorrectAll, 'numCorrectSelected': numCorrectSelected}
+    context = {'response': response,
+               'questions': questions,
+               'selectedAnswers': selectedAnswers,
+               'numCorrectAll': numCorrectAll,
+               'numCorrectSelected': numCorrectSelected}
     return render(request, 'quizzes/response.html', context)
 
 
@@ -348,5 +352,14 @@ def viewAllResponses(request, liveID):
         raise Http404
     if request.user != liveQuiz.quiz.author:
         return HttpResponseForbidden(request)
-    responses = QuizResponse.objects.filter(live=liveQuiz)
-    return render(request, 'quizzes/all_responses.html', {'responses': responses})
+    responses = QuizResponse.objects.filter(live=liveQuiz).order_by('-submitted_at')
+    pageNum = request.GET.get('page', 1)
+    responsesPage = Paginator(responses, 10).get_page(pageNum)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'quizzes/_all_responses_table.html', {'page': responsesPage})
+    questions = Question.objects.filter(quiz=liveQuiz.quiz)
+    context = {'responses': responses,
+               'responsesPage': responsesPage,
+               'liveQuiz': liveQuiz,
+               'questions': questions}
+    return render(request, 'quizzes/all_responses.html', context)

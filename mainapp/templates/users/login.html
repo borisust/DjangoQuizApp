@@ -6,13 +6,15 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1>User Login</h1>
-        <p>Don't have an account? <a href="{% url 'registration' %}">Click here to register.</a></p>
-        <form action="{% url 'authentication' %}" method="post">
-            {% csrf_token %}
-            {{form|crispy}}
-            <button class="btn btn-primary">Submit</button>
-        </form>
+    <div class="d-flex align-items-center justify-content-center pt-4">
+        <div>
+            <h1>User Login</h1>
+            <p>Don't have an account? <a href="{% url 'registration' %}">Click here to register.</a></p>
+            <form action="{% url 'authentication' %}" method="post">
+                {% csrf_token %}
+                {{form|crispy}}
+                <button class="btn btn-primary">Submit</button>
+            </form>
+        </div>
     </div>
 {% endblock %}

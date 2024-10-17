@@ -4,6 +4,7 @@
             <th>Title</th>
             <th>Access</th>
             <th>Published at</th>
+            <th>Number of responses</th>
             <th></th>
         </tr>
     </thead>
@@ -13,6 +14,7 @@
             <td>{{ liveQuiz.quiz.title }}</td>
             <td>{{ liveQuiz.get_access_display }}</td>
             <td>{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
+            <td>{{ liveQuiz.quizresponse_set.count }}</td>
             <td>
                 <a href="{% url 'manageLive' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-warning">Manage</a>
                 <a href="{% url 'viewAllResponses' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-info">Responses</a>
