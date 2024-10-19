@@ -1,8 +1,9 @@
-<table id="saved_quizzes" class="table table-hover">
+<table id="saved_quizzes" class="table table-hover ">
     <thead>
-        <tr>
+        <tr >
             <th>Title</th>
-            <th>Created at</th>
+            <th class="text-center">Created at</th>
+            <th class="text-center">Number of questions</th>
             <th></th>
         </tr>
     </thead>
@@ -10,7 +11,8 @@
     {% for quiz in page %}
         <tr id="quiz_{{ quiz.id }}">
             <td>{{ quiz.title }}</td>
-            <td>{{ quiz.created_at|date:'Y-m-d H:i' }}</td>
+            <td class="text-center">{{ quiz.created_at|date:'Y-m-d H:i' }}</td>
+            <td class="text-center">{{ quiz.question_set.count }}</td>
             <td>
                 <button type="button" onclick="deleteQuiz({{ quiz.id }})" class="mx-1 float-end btn btn-danger">Delete quiz</button>
                 <a href="{% url 'editQuiz' quizID=quiz.id %}" class="mx-1 float-end btn btn-info">Edit/Publish</a>

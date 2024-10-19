@@ -123,9 +123,13 @@ function submitQuestion(event){
         success: function (response) {
             if (response.success){
                 if (response.hasOwnProperty('edit')){
-                    updateQuestion(response.id, response.text, response.image);
+                    document.getElementById(`question_${response.id}`).outerHTML = response.data;
+                    let el = document.getElementById(`question_${response.id}`);
+                    el.classList.add('bg-info');
+                    setTimeout(()=>{el.classList.remove('bg-info');},2000)
                 }else{
-                    displayQuestion(response.id, response.text, response.image);
+                    document.getElementById('questions').innerHTML += response.data;
+                    new bootstrap.Collapse(document.getElementById(`question_${response.id}`));
                 }
                 resetQuestionForm();
             }else{
@@ -148,45 +152,8 @@ function submitQuestion(event){
 };
 $('#question_form').submit((e) => submitQuestion(e));
 
-// add a question card after a question is added
-function displayQuestion(id, text, image){
-    $('#no_questions').remove();
-    let el = document.createElement("div");
-    el.id = `question_${id}`;
-    el.classList.add("w-25", "p-1", "collapse");
-    el.style.minWidth = "200px";
-    el.innerHTML = `
-        <div class="card h-100">
-        <img src="${image}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
-        <div class="card-body">
-        <h5 class="card-title">${text}</h5>
-        <button class="btn btn-info w-100 mb-2" type="button" onclick="editQuestion(${id})"><i class="bi bi-pen"></i> Edit question</button>
-        <button class="btn btn-danger w-100" type="button" onclick="deleteQuestion(${id})"><i class="bi bi-trash"></i> Delete question</button>
-        </div>
-        </div>
-    `;
-    document.getElementById('questions').appendChild(el);
-    new bootstrap.Collapse(el);
-}
-
-// update a question card after a question is edited
-function updateQuestion(id, text, image){
-    let el = document.getElementById(`question_${id}`);
-    el.innerHTML = `
-        <div class="card h-100">
-        <img src="${image}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
-        <div class="card-body">
-        <h5 class="card-title">${text}</h5>
-        <button class="btn btn-info w-100 mb-2" type="button" onclick="editQuestion(${id})"><i class="bi bi-pen"></i> Edit question</button>
-        <button class="btn btn-danger w-100" type="button" onclick="deleteQuestion(${id})"><i class="bi bi-trash"></i> Delete question</button>
-        </div>
-        </div>
-    `;
-    el.classList.add('bg-info');
-    setTimeout(()=>{el.classList.remove('bg-info');},2000)
-}
-
 function deleteQuestion(id){
+    $('#questions_spinner')[0].hidden=false;
     const csrf = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     $.ajax({
         url: `/questions/${id}/delete`,
@@ -208,7 +175,9 @@ function deleteQuestion(id){
         error: function (xhr, status, error){
             showError(error);
         }
-    })
+    }).always(()=>{
+        $('#questions_spinner')[0].hidden=true;
+    });
 }
 
 // get and display a question editor
@@ -264,3 +233,60 @@ $('#publish_form').submit((event) => {
     });
 });
 
+function swapQuestions(id1, id2){
+    document.getElementById('btn_questions_order').hidden = false;
+    let el1 = document.getElementById(id1);
+    let el2 = document.getElementById(id2);
+    el2.addEventListener('hidden.bs.collapse', ()=>{
+        let temp = el1.outerHTML;
+        el1.outerHTML = el2.outerHTML;
+        el2.outerHTML = temp;
+        new bootstrap.Collapse(document.getElementById(id1));
+        new bootstrap.Collapse(document.getElementById(id2));
+    });
+    new bootstrap.Collapse(el1);
+    new bootstrap.Collapse(el2);
+}
+
+
+function moveQuestionBack(questionID){
+    let question = $(`#question_${questionID}`);
+    if (question.next().length > 0){
+        swapQuestions(question[0].id, question.next()[0].id);
+    }
+}
+
+function moveQuestionForward(questionID){
+    let question = $(`#question_${questionID}`);
+    if (question.prev().length > 0){
+        swapQuestions(question[0].id, question.prev()[0].id);
+    }
+}
+
+$('#question_order_form').submit((event)=>{
+    event.preventDefault();
+    $('#questions_spinner')[0].hidden = false;
+    $form = $('#question_order_form');
+    let formData = new FormData($form[0]);
+    $.ajax({
+        url: $form.attr('action'),
+        type: 'POST',
+        data: formData,
+        success: function (response) {
+            if (response.success){
+                $('#btn_questions_order')[0].hidden = true;
+            }else{
+                showError('Something went wrong.');
+            }
+        },
+        error: function(data, status, error){
+            showError(error);
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+
+    }).always(()=> {
+        $('#questions_spinner')[0].hidden = true;
+    });
+});

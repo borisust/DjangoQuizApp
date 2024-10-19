@@ -3,6 +3,7 @@ from django.http import JsonResponse, Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
+from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -76,6 +77,22 @@ def editQuiz(request, quizID):
     return render(request, 'quizzes/creator.html', context)
 
 
+def setQuestionOrder(request, quizID):
+    if request.headers.get('x-requested-with') != 'XMLHttpRequest':
+        # ajax only
+        return redirect('editQuiz', quizID=quizID)
+    try:
+        quiz = Quiz.objects.get(pk=quizID)
+    except Quiz.DoesNotExist:
+        raise Http404
+    if request.user != quiz.author or request.method != 'POST' or quiz.live:
+        return HttpResponseForbidden(request)
+    questionList = request.POST.getlist('questions')
+    quiz.set_question_order(questionList)
+    quiz.save()
+    return JsonResponse({'success': True})
+
+
 def addQuestion(request, quizID):
     if request.headers.get('x-requested-with') != 'XMLHttpRequest':
         # ajax only
@@ -107,11 +124,8 @@ def addQuestion(request, quizID):
         question.save()
         for answer in answersList:
             answer.save()
-        if question.image:
-            url = question.image.url
-        else:
-            url = static('placeholder.svg')
-        return JsonResponse({'success': True, 'id': question.id, 'text': question.text, 'image': url})
+        data = render_to_string('quizzes/_question_card.html', {'question': question, 'hide': True})
+        return JsonResponse({'success': True, 'id': question.id, 'data': data})
     else:
         return JsonResponse({'success': False, 'errors': form.errors})
 
@@ -166,11 +180,8 @@ def editQuestion(request, questionID):
             answer.delete()
         for answer in answersList:
             answer.save()
-        if question.image:
-            url = question.image.url
-        else:
-            url = static('placeholder.svg')
-        return JsonResponse({'success': True, 'edit': True, 'id': question.id, 'text': question.text, 'image': url})
+        data = render_to_string('quizzes/_question_card.html', {'question': question})
+        return JsonResponse({'success': True, 'edit': True, 'id': question.id, 'data': data})
     else:
         return JsonResponse({'success': False, 'errors': form.errors})
 
@@ -363,3 +374,5 @@ def viewAllResponses(request, liveID):
                'liveQuiz': liveQuiz,
                'questions': questions}
     return render(request, 'quizzes/all_responses.html', context)
+
+

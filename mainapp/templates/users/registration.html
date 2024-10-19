@@ -8,13 +8,17 @@
 {% block content %}
     <div class="d-flex align-items-center justify-content-center pt-4">
         <div>
-            <h1>User Registration</h1>
+            <h1 class="text-center pb-2">User Registration</h1>
+            {% if request.user.is_authenticated %}
+            <p>You are already logged in. <a href="{% url 'logoff' %}">Click here to log out.</a></p>
+            {% else %}
             <p>Already have an account? <a href="{% url 'authentication' %}">Click here to login.</a></p>
             <form action="{% url 'registration' %}" method="post">
                 {% csrf_token %}
                 {{form|crispy}}
                 <button class="btn btn-primary">Submit</button>
             </form>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

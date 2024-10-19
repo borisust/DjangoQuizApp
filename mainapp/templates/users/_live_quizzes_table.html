@@ -2,9 +2,9 @@
     <thead>
         <tr>
             <th>Title</th>
-            <th>Access</th>
-            <th>Published at</th>
-            <th>Number of responses</th>
+            <th class="text-center">Access</th>
+            <th class="text-center">Published at</th>
+            <th class="text-center">Number of responses</th>
             <th></th>
         </tr>
     </thead>
@@ -12,9 +12,9 @@
         {% for liveQuiz in page %}
         <tr id="live_quiz_{{ liveQuiz.id }}">
             <td>{{ liveQuiz.quiz.title }}</td>
-            <td>{{ liveQuiz.get_access_display }}</td>
-            <td>{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
-            <td>{{ liveQuiz.quizresponse_set.count }}</td>
+            <td class="text-center">{{ liveQuiz.get_access_display }}</td>
+            <td class="text-center">{{ liveQuiz.published_at|date:'Y-m-d H:i' }}</td>
+            <td class="text-center">{{ liveQuiz.quizresponse_set.count }}</td>
             <td>
                 <a href="{% url 'manageLive' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-warning">Manage</a>
                 <a href="{% url 'viewAllResponses' liveID=liveQuiz.id %}" class="mx-1 float-end btn btn-info">Responses</a>

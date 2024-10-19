@@ -19,6 +19,9 @@ class Question(models.Model):
     image = models.ImageField(upload_to='images/', default=None, blank=True, null=True)
     explanation = models.CharField(max_length=150, default=None, blank=True, null=True)
 
+    class Meta:
+        order_with_respect_to = "quiz"
+
 
 class AnswerOption(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)

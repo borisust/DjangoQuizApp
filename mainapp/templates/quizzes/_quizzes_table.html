@@ -2,8 +2,8 @@
     <thead>
         <tr>
             <th>Title</th>
-            <th>Published by</th>
-            <th>Published at</th>
+            <th class="text-center">Published by</th>
+            <th class="text-center">Published at</th>
             <th></th>
         </tr>
     </thead>
@@ -11,8 +11,8 @@
         {% for quiz in page %}
         <tr id="live_quiz_{{ quiz.id }}">
             <td>{{ quiz.quiz.title }}</td>
-            <td>{{ quiz.quiz.author.username }}</td>
-            <td>{{ quiz.published_at|date:'Y-m-d H:i' }}</td>
+            <td class="text-center">{{ quiz.quiz.author.username }}</td>
+            <td class="text-center">{{ quiz.published_at|date:'Y-m-d H:i' }}</td>
             <td>
                 <a href="{% url 'viewQuiz' liveID=quiz.id %}" class="mx-1 float-end btn btn-secondary">Take quiz</a>
             </td>

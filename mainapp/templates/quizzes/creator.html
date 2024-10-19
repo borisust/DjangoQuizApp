@@ -24,29 +24,25 @@
         </form>
     </div>
     <div>
-        <h3 class="ps-2">Questions:</h3>
-        <div id="questions" class="d-flex flex-wrap">
-            {% if questions %}
-                {% for question in questions %}
-                    <div class="w-25 p-1 collapse show" style="min-width: 200px;" id="question_{{ question.id }}">
-                        <div class="card h-100">
-                            {% if question.image %}
-                                <img src="{{ question.image.url }}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
-                            {% else %}
-                                <img src="{% static 'placeholder.svg' %}" alt="question image" style="object-fit: scale-down;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
-                            {% endif %}
-                            <div class="card-body">
-                                <h5 class="card-title">{{ question.text }}</h5>
-                                <button class="btn btn-info w-100 mb-2" type="button" onclick="editQuestion({{ question.id }})"><i class="bi bi-pen"></i> Edit question</button>
-                                <button class="btn btn-danger w-100" type="button" onclick="deleteQuestion({{ question.id }})"><i class="bi bi-trash"></i> Delete question</button>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p id="no_questions" class="ps-2">No questions were added yet.</p>
-            {% endif %}
-        </div>
+        <form id="question_order_form" method="post" action="{% url 'setQuestionOrder' quizID=id %}">
+            {% csrf_token %}
+            <div class="ps-2 py-3">
+                <h3 class="d-inline">Questions: </h3>
+                <button class="btn btn-primary btn-sm float-end me-4 mt-1" type="submit" id="btn_questions_order" hidden=""><i class="bi bi-floppy"></i> Save question order</button>
+                <div class="float-end me-1 mt-1 spinner-border" id="questions_spinner" role="status" hidden="" >
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div id="questions" class="d-flex flex-wrap">
+                {% if questions %}
+                    {% for question in questions %}
+                        {% include 'quizzes/_question_card.html' with question=question only %}
+                    {% endfor %}
+                {% else %}
+                    <p id="no_questions" class="ps-2">No questions were added yet.</p>
+                {% endif %}
+            </div>
+        </form>
         <div class="border m-2 p-3" id="question_editor">
             <h4>New question</h4>
             <form action="{% url 'addQuestion' quizID=id %}" id="question_form" autocomplete="off">
