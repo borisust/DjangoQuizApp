@@ -26,8 +26,8 @@
             <h4>Stop publishing</h4>
             <p class="text-danger">
                 If you stop publishing this quiz all responses will be permanently lost.
-                The quiz will appear as unpublished in your profile.
-                You will be able to edit and publish it again.
+                The quiz will appear as unpublished in your profile, and you will be able to edit and publish it again.
+                If you want to keep the current responses while preventing new ones from being submitted, set access to private instead.
             </p>
             <a href="{% url 'unpublishQuiz' liveID=liveQuiz.id %}" class="btn btn-danger">Stop publishing</a>
         </div>

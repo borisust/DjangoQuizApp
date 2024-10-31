@@ -5,20 +5,21 @@
     {% endif %}
     " style="min-width: 200px;" id="question_{{ question.id }}">
     <input type="hidden" name="questions" value="{{ question.id }}" />
-    <div class="card h-100">
+    <div class="card h-100 bg-secondary text-white">
         {% if question.image %}
         <img src="{{ question.image.url }}" alt="question image" style="object-fit: cover;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
         {% else %}
         <img src="{% static 'placeholder.svg' %}" alt="question image" style="object-fit: cover;min-height: 200px;max-height: 25vh;" class="card-img-top h-100 w-100" />
         {% endif %}
-        <div class="px-1">
-            <button type="button" class="btn btn-secondary btn-sm" title="move forward" onclick="moveQuestionForward({{ question.id }})"><i class="bi bi-arrow-left"></i></button>
-            <button type="button" class="btn btn-secondary btn-sm float-end" title="move backward" onclick="moveQuestionBack({{ question.id }})"><i class="bi bi-arrow-right"></i></button>
-        </div>
         <div class="card-body">
             <h5 class="card-title">{{ question.text }}</h5>
-            <button class="btn btn-info w-100 mb-2" type="button" onclick="editQuestion({{ question.id }})"><i class="bi bi-pen"></i> Edit question</button>
-            <button class="btn btn-danger w-100" type="button" onclick="deleteQuestion({{ question.id }})"><i class="bi bi-trash"></i> Delete question</button>
+            <p class="card-text">{{ question.answeroption_set.count }} answer options</p>
+        </div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary " title="move forward" onclick="moveQuestionForward({{ question.id }})"><i class="bi bi-caret-left-fill"></i></button>
+            <button type="button" class="btn btn-info w-25" onclick="editQuestion({{ question.id }})"><i class="bi bi-pen"></i> Edit</button>
+            <button type="button" class="btn btn-danger w-25" onclick="deleteQuestion({{ question.id }})"><i class="bi bi-trash"></i> Delete</button>
+            <button type="button" class="btn btn-primary  " title="move backward" onclick="moveQuestionBack({{ question.id }})"><i class="bi bi-caret-right-fill"></i></button>
         </div>
     </div>
 </div>

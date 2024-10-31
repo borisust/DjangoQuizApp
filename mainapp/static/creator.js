@@ -128,6 +128,7 @@ function submitQuestion(event){
                     el.classList.add('bg-info');
                     setTimeout(()=>{el.classList.remove('bg-info');},2000)
                 }else{
+                    $('#no_questions').remove();
                     document.getElementById('questions').innerHTML += response.data;
                     new bootstrap.Collapse(document.getElementById(`question_${response.id}`));
                 }

@@ -59,7 +59,7 @@ def editQuiz(request, quizID):
     except Quiz.DoesNotExist:
         raise Http404
     if request.user != quiz.author:
-        return redirect('home')
+        return HttpResponseForbidden(request)
     if quiz.live:
         return redirect('userProfile')
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
