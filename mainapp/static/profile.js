@@ -5,7 +5,7 @@ function deleteQuiz(id){
     const modal = new bootstrap.Modal(document.getElementById('modal_confirm_delete'));
     $('#btn_confirm_delete')[0].onclick = ()=>{
         $.ajax({
-            url: `/quizzes/${id}/deletett`,
+            url: `/quizzes/${id}/delete`,
             type: 'POST',
             data: {
                 'csrfmiddlewaretoken': csrf
